@@ -28,10 +28,11 @@ Este repositorio contiene únicamente una **maqueta de interfaz y estructura Gra
 
 ## Compilar
 
-Abrir el proyecto en Android Studio (JDK 17, Android SDK 35) y ejecutar:
+Abrir el proyecto en Android Studio (JDK 17, Android SDK 35) y sincronizar Gradle. El repositorio todavía no incluye Gradle Wrapper. Para compilar desde terminal, instalar Gradle 8.9 y ejecutar:
 
 ```bash
-./gradlew assembleDebug
+gradle assembleDebug
+gradle testDebugUnitTest
 ```
 
 La primera compilación puede requerir descargar dependencias. Aún no se ha verificado una compilación completa ni pruebas en dispositivo.
