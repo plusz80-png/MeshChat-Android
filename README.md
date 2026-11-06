@@ -35,3 +35,16 @@ Abrir el proyecto en Android Studio (JDK 17, Android SDK 35) y ejecutar:
 ```
 
 La primera compilación puede requerir descargar dependencias. Aún no se ha verificado una compilación completa ni pruebas en dispositivo.
+
+
+## Primer avance técnico: Relay Packet v1
+
+En la rama \`feature/opaque-relay-packet-v1\` se ha añadido:
+
+- Un contenedor binario versionado para transportar un payload ya cifrado, con ID aleatorio, token de destino opaco, caducidad y límite de saltos.
+- Un encabezado autenticado previsto como AAD para el futuro cifrado E2EE. El contador de saltos queda fuera del AAD para que los repetidores puedan reducirlo.
+- Validación estricta de tamaños, versión, caducidad positiva y límite de saltos.
+- Pruebas unitarias para serialización, manipulación del encabezado, truncamiento, datos sobrantes y agotamiento de saltos.
+- Un flujo de GitHub Actions para ejecutar pruebas y compilar el APK de depuración.
+
+**Límite importante:** esto no implementa todavía cifrado, descifrado, autenticación de identidades, chat, retransmisión, BLE, Wi-Fi Direct ni transporte por Internet. El proyecto no debe utilizarse aún para mensajes privados reales. La selección de una biblioteca E2EE compatible con Android sigue pendiente de auditoría e integración.
