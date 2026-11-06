@@ -15,7 +15,7 @@ A static public-key encryption helper alone is not a complete messaging protocol
 - Treat BLE, Wi-Fi Direct, mesh forwarding and Internet relay as interchangeable byte transports. A transport receives only an opaque sealed payload plus the minimum routing metadata.
 - Use the Relay Packet v1 framing draft for the first transport-neutral packet boundary.
 - Do not implement cryptographic primitives, a Double Ratchet, or a group ratchet from scratch.
-- Evaluate an audited, maintained Android-compatible implementation of the IETF Messaging Layer Security protocol (MLS, RFC 9420) as the common session/group layer. A two-member conversation can be represented as a two-member MLS group; private communities use authenticated membership changes and Welcome delivery. This is a candidate, not yet integrated or verified.
+- Evaluate MLS (RFC 9420) as the common session/group layer. OpenMLS is the leading proof-of-concept candidate because it is an RFC 9420 Rust implementation and its upstream CI builds an Android arm64 target, but that Android target is listed as built rather than tested. No official Kotlin binding was confirmed. It is not yet approved, integrated or verified. A two-member conversation can be represented as a two-member MLS group; private communities use authenticated membership changes and Welcome delivery. See `docs/security/mls-implementation-evaluation.md`.
 - Bind the immutable packet header to the E2EE ciphertext as AEAD associated data. The mutable hop counter is excluded and is only a best-effort propagation limit.
 - Any future server stores/forwards opaque bytes only. It must not hold endpoint private keys, MLS state, plaintext, or message previews.
 
