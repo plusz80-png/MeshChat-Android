@@ -25,7 +25,7 @@ The fixed header is 50 bytes. The maximum encoded packet is 65,586 bytes. BLE tr
 
 ## End-to-end authenticated data
 
-Before encryption, the E2EE engine must authenticate this exact associated-data byte sequence:
+Before encryption, the E2EE engine must authenticate this exact associated-data byte sequence. With MLS (RFC 9420), supply these bytes as the `FramedContent.authenticated_data` input; RFC 9420 includes that field in the authenticated/encrypted message construction. Do not wrap MLS in a second, custom AEAD layer. If the selected MLS binding cannot set this field, put the same immutable values inside the authenticated application payload and verify them after decryption:
 
 1. ASCII \`MESHCHAT-RELAY-AAD\`
 2. Version byte \`0x01\`
