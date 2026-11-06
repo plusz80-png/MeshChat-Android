@@ -53,3 +53,8 @@ En la rama \`feature/opaque-relay-packet-v1\` se ha añadido:
 ### Android permissions and voluntary relay
 
 The platform permission and background-execution plan is documented in [docs/android/permissions-and-background.md](docs/android/permissions-and-background.md). It is a design checklist, not an implementation: transport permissions and foreground services will be added only alongside their corresponding user-visible features.
+
+
+### Evaluación de cifrado E2EE
+
+La evaluación preliminar de MLS y su integración Android está en [docs/security/mls-implementation-evaluation.md](docs/security/mls-implementation-evaluation.md). OpenMLS queda como candidato para una prueba de concepto Rust/Android, no como dependencia aprobada. La compatibilidad real con Android, la persistencia del estado MLS y las pruebas entre dispositivos siguen pendientes.
