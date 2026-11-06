@@ -28,10 +28,34 @@ Este repositorio contiene únicamente una **maqueta de interfaz y estructura Gra
 
 ## Compilar
 
-Abrir el proyecto en Android Studio (JDK 17, Android SDK 35) y ejecutar:
+Abrir el proyecto en Android Studio (JDK 17, Android SDK 35) y sincronizar Gradle. El repositorio todavía no incluye Gradle Wrapper. Para compilar desde terminal, instalar Gradle 8.9 y ejecutar:
 
 ```bash
-./gradlew assembleDebug
+gradle assembleDebug
+gradle testDebugUnitTest
 ```
 
 La primera compilación puede requerir descargar dependencias. Aún no se ha verificado una compilación completa ni pruebas en dispositivo.
+
+
+## Primer avance técnico: Relay Packet v1
+
+En la rama \`feature/opaque-relay-packet-v1\` se ha añadido:
+
+- Un contenedor binario versionado para transportar un payload ya cifrado, con ID aleatorio, token de destino opaco, caducidad y límite de saltos.
+- Un encabezado autenticado previsto como AAD para el futuro cifrado E2EE. El contador de saltos queda fuera del AAD para que los repetidores puedan reducirlo.
+- Validación estricta de tamaños, versión, caducidad positiva y límite de saltos.
+- Pruebas unitarias para serialización, manipulación del encabezado, truncamiento, datos sobrantes y agotamiento de saltos.
+- Un flujo de GitHub Actions para ejecutar pruebas y compilar el APK de depuración.
+
+**Límite importante:** esto no implementa todavía cifrado, descifrado, autenticación de identidades, chat, retransmisión, BLE, Wi-Fi Direct ni transporte por Internet. El proyecto no debe utilizarse aún para mensajes privados reales. La selección de una biblioteca E2EE compatible con Android sigue pendiente de auditoría e integración.
+
+
+### Android permissions and voluntary relay
+
+The platform permission and background-execution plan is documented in [docs/android/permissions-and-background.md](docs/android/permissions-and-background.md). It is a design checklist, not an implementation: transport permissions and foreground services will be added only alongside their corresponding user-visible features.
+
+
+### Evaluación de cifrado E2EE
+
+La evaluación preliminar de MLS y su integración Android está en [docs/security/mls-implementation-evaluation.md](docs/security/mls-implementation-evaluation.md). OpenMLS queda como candidato para una prueba de concepto Rust/Android, no como dependencia aprobada. La compatibilidad real con Android, la persistencia del estado MLS y las pruebas entre dispositivos siguen pendientes.
