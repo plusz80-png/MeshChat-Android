@@ -48,3 +48,8 @@ En la rama \`feature/opaque-relay-packet-v1\` se ha añadido:
 - Un flujo de GitHub Actions para ejecutar pruebas y compilar el APK de depuración.
 
 **Límite importante:** esto no implementa todavía cifrado, descifrado, autenticación de identidades, chat, retransmisión, BLE, Wi-Fi Direct ni transporte por Internet. El proyecto no debe utilizarse aún para mensajes privados reales. La selección de una biblioteca E2EE compatible con Android sigue pendiente de auditoría e integración.
+
+
+### Android permissions and voluntary relay
+
+The platform permission and background-execution plan is documented in [docs/android/permissions-and-background.md](docs/android/permissions-and-background.md). It is a design checklist, not an implementation: transport permissions and foreground services will be added only alongside their corresponding user-visible features.
