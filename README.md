@@ -1,6 +1,6 @@
 # MeshChat Android
 
-Scaffold inicial para una aplicación Android nativa de mensajería privada y comunicación híbrida.
+Proyecto Android nativo para mensajería privada y comunicación híbrida.
 
 ## Decisiones del proyecto
 
@@ -14,48 +14,41 @@ Scaffold inicial para una aplicación Android nativa de mensajería privada y co
 - Selección automática o manual/combinada de conexiones.
 - LoRa queda como ampliación futura mediante hardware externo.
 
-## Estado actual
+## Estado real de la implementación
 
-Este repositorio contiene únicamente una **maqueta de interfaz y estructura Gradle inicial**. No implementa todavía autenticación, almacenamiento de mensajes, cifrado E2EE, intercambio QR, BLE, Wi-Fi Direct, descubrimiento de pares ni retransmisión Mesh. No se debe considerar seguro ni utilizar para comunicaciones reales.
+La aplicación sigue siendo un prototipo. En la rama `feature/opaque-relay-packet-v1` ya existen:
 
-## Arquitectura de seguridad prevista
+- Una pantalla Compose inicial.
+- Un codec binario de paquetes Mesh, independiente del transporte.
+- Una política de admisión y deduplicación de paquetes en cada repetidor.
+- Un almacén SQLite persistente y limitado que guarda únicamente hashes y caducidades.
+- Pruebas JVM para el formato y la política de repetición.
+- Pruebas instrumentadas Android previstas para persistencia, caducidad, límite de capacidad y concurrencia.
 
-- Las claves privadas deben permanecer en los dispositivos.
-- Los relés y servidores, si se incorporan, solo transportarán paquetes cifrados opacos.
-- Ningún servidor de transporte debe tener acceso a claves privadas ni al texto en claro.
-- La retransmisión será voluntaria y configurable.
-- Los permisos Android y el funcionamiento en segundo plano deberán ajustarse a las restricciones de cada versión y minimizar batería/datos.
+**Todavía no están implementados** el cifrado E2EE, la autenticación de identidades, registro, comunidades, QR, BLE, Wi-Fi Direct, descubrimiento de pares, encaminamiento real ni retransmisión por Internet. No utilizar para mensajes privados reales.
 
-## Compilar
+## Arquitectura de seguridad
 
-Abrir el proyecto en Android Studio (JDK 17, Android SDK 35) y sincronizar Gradle. El repositorio todavía no incluye Gradle Wrapper. Para compilar desde terminal, instalar Gradle 8.9 y ejecutar:
+- Las claves privadas y el estado criptográfico deben permanecer en los dispositivos finales.
+- Los repetidores y servidores solo transportarán paquetes opacos; no tendrán claves privadas, estado MLS ni texto en claro.
+- El almacén de repetición guarda un hash y una caducidad, nunca el contenido del mensaje.
+- La retransmisión será voluntaria, visible y detenible por el usuario.
+- Los permisos y procesos en segundo plano deben ajustarse a las restricciones de Android.
+
+## Compilar y probar
+
+El repositorio todavía no incluye Gradle Wrapper. Abrir en Android Studio con JDK 17 y Android SDK 35, o instalar Gradle 8.9 y ejecutar:
 
 ```bash
-gradle assembleDebug
-gradle testDebugUnitTest
+gradle testDebugUnitTest assembleDebug
+gradle connectedDebugAndroidTest
 ```
 
-La primera compilación puede requerir descargar dependencias. Aún no se ha verificado una compilación completa ni pruebas en dispositivo.
+La segunda orden necesita un emulador o dispositivo conectado. GitHub Actions ejecuta estas tareas en CI; los resultados deben revisarse en la pestaña Actions.
 
+## Documentación
 
-## Primer avance técnico: Relay Packet v1
-
-En la rama \`feature/opaque-relay-packet-v1\` se ha añadido:
-
-- Un contenedor binario versionado para transportar un payload ya cifrado, con ID aleatorio, token de destino opaco, caducidad y límite de saltos.
-- Un encabezado autenticado previsto como AAD para el futuro cifrado E2EE. El contador de saltos queda fuera del AAD para que los repetidores puedan reducirlo.
-- Validación estricta de tamaños, versión, caducidad positiva y límite de saltos.
-- Pruebas unitarias para serialización, manipulación del encabezado, truncamiento, datos sobrantes y agotamiento de saltos.
-- Un flujo de GitHub Actions para ejecutar pruebas y compilar el APK de depuración.
-
-**Límite importante:** esto no implementa todavía cifrado, descifrado, autenticación de identidades, chat, retransmisión, BLE, Wi-Fi Direct ni transporte por Internet. El proyecto no debe utilizarse aún para mensajes privados reales. La selección de una biblioteca E2EE compatible con Android sigue pendiente de auditoría e integración.
-
-
-### Android permissions and voluntary relay
-
-The platform permission and background-execution plan is documented in [docs/android/permissions-and-background.md](docs/android/permissions-and-background.md). It is a design checklist, not an implementation: transport permissions and foreground services will be added only alongside their corresponding user-visible features.
-
-
-### Evaluación de cifrado E2EE
-
-La evaluación preliminar de MLS y su integración Android está en [docs/security/mls-implementation-evaluation.md](docs/security/mls-implementation-evaluation.md). OpenMLS queda como candidato para una prueba de concepto Rust/Android, no como dependencia aprobada. La compatibilidad real con Android, la persistencia del estado MLS y las pruebas entre dispositivos siguen pendientes.
+- [Formato de paquete y repetición](docs/protocol/relay-packet-v1.md)
+- [Límite de seguridad E2EE y repetidores](docs/adr/0001-e2ee-boundary-and-relays.md)
+- [Permisos y segundo plano Android](docs/android/permissions-and-background.md)
+- [Evaluación preliminar de MLS](docs/security/mls-implementation-evaluation.md)
