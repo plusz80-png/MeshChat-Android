@@ -22,6 +22,9 @@ jobs:
           java-version: '17'
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # "tools" is no longer a valid sdkmanager package on current SDK images.
+          packages: platform-tools
       - name: Accept Android SDK licenses
         run: yes | sdkmanager --licenses
       - name: Install Android SDK 35
@@ -30,5 +33,14 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Run unit tests and assemble debug APK
+      - name: Run JVM unit tests and assemble debug APK
         run: gradle testDebugUnitTest assembleDebug
+      - name: Run Android instrumentation tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: gradle connectedDebugAndroidTest
