@@ -6,6 +6,9 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Assert.assertThrows
 import org.junit.Test
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 class BleFragmentationTest {
     @Test
@@ -94,4 +97,30 @@ class BleFragmentationTest {
             BleFragment.create(0, 0, 1, 1, 3, byteArrayOf(1))
         }
     }
+    @Test
+    fun concurrentFragmentsCompleteExactlyOnce() {
+        val packet = ByteArray(256) { it.toByte() }
+        val fragments = BleFragmenter.fragment(packet, maxFrameBytes = 40, transferId = 55)
+        val reassembler = BleReassembler()
+        val gate = CountDownLatch(1)
+        val executor = Executors.newFixedThreadPool(8)
+        try {
+            val tasks = fragments.map { fragment ->
+                executor.submit<BleReassemblyResult> {
+                    gate.await()
+                    reassembler.accept(fragment, nowElapsedMillis = 500)
+                }
+            }
+            gate.countDown()
+            val results = tasks.map { it.get(5, TimeUnit.SECONDS) }
+            val completed = results.filterIsInstance<BleReassemblyResult.Complete>()
+            assertEquals(1, completed.size)
+            assertArrayEquals(packet, completed.single().packetBytes)
+            assertEquals(0, reassembler.activeTransferCount())
+            assertEquals(0, reassembler.bufferedByteCount())
+        } finally {
+            executor.shutdownNow()
+        }
+    }
+
 }
