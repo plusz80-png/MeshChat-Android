@@ -19,19 +19,20 @@ Proyecto Android nativo para mensajería privada y comunicación híbrida.
 La aplicación sigue siendo un prototipo. En la rama `feature/opaque-relay-packet-v1` ya existen:
 
 - Una pantalla Compose inicial.
-- Un codec binario de paquetes Mesh, independiente del transporte.
-- Una política de admisión y deduplicación de paquetes en cada repetidor.
-- Un almacén SQLite persistente y limitado que guarda únicamente hashes y caducidades.
-- Pruebas JVM para el formato y la política de repetición.
-- Pruebas instrumentadas Android previstas para persistencia, caducidad, límite de capacidad y concurrencia.
+- Codec binario de paquetes RelayPacket v1.
+- Política de admisión y deduplicación de paquetes en repetidores.
+- Almacén SQLite persistente y limitado para hashes y caducidades.
+- Fragmentación/reensamblado BLE independiente de Android, con límites de memoria, número de transferencias y expiración.
+- Pruebas JVM para codec, repetición y fragmentación BLE.
 
-**Todavía no están implementados** el cifrado E2EE, la autenticación de identidades, registro, comunidades, QR, BLE, Wi-Fi Direct, descubrimiento de pares, encaminamiento real ni retransmisión por Internet. No utilizar para mensajes privados reales.
+**Todavía no están implementados** el cifrado E2EE, autenticación de identidades, registro, comunidades, QR, scanner/advertiser/GATT BLE, Wi-Fi Direct, descubrimiento, encaminamiento, cola durable de mensajes ni retransmisión por Internet. No utilizar para mensajes privados reales.
 
 ## Arquitectura de seguridad
 
 - Las claves privadas y el estado criptográfico deben permanecer en los dispositivos finales.
 - Los repetidores y servidores solo transportarán paquetes opacos; no tendrán claves privadas, estado MLS ni texto en claro.
 - El almacén de repetición guarda un hash y una caducidad, nunca el contenido del mensaje.
+- El código de fragmentación BLE transporta bytes opacos y no autentica ni cifra.
 - La retransmisión será voluntaria, visible y detenible por el usuario.
 - Los permisos y procesos en segundo plano deben ajustarse a las restricciones de Android.
 
@@ -44,11 +45,16 @@ gradle testDebugUnitTest assembleDebug
 gradle connectedDebugAndroidTest
 ```
 
-La segunda orden necesita un emulador o dispositivo conectado. GitHub Actions ejecuta estas tareas en CI; los resultados deben revisarse en la pestaña Actions.
+La segunda orden necesita un emulador o dispositivo conectado.
+
+## CI conocida
+
+La ejecución 31 de GitHub Actions completó correctamente `testDebugUnitTest assembleDebug`, pero el job de `connectedDebugAndroidTest` falló: el emulador reportó un fallo del proceso de instrumentación y 0 tests ejecutados. Por tanto, los tests instrumentados están escritos, pero **no hay resultado aprobado de Android instrumentado**. No se han realizado pruebas físicas.
 
 ## Documentación
 
 - [Formato de paquete y repetición](docs/protocol/relay-packet-v1.md)
+- [Fragmentación BLE v1](docs/protocol/ble-fragmentation-v1.md)
 - [Límite de seguridad E2EE y repetidores](docs/adr/0001-e2ee-boundary-and-relays.md)
 - [Permisos y segundo plano Android](docs/android/permissions-and-background.md)
 - [Evaluación preliminar de MLS](docs/security/mls-implementation-evaluation.md)
