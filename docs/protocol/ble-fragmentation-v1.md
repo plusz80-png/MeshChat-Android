@@ -35,7 +35,7 @@ The minimum supported GATT payload budget is 20 bytes (ATT MTU 23), leaving a 3-
 - Maximum reserved reassembly memory: 262,344 bytes by default (4 × maximum packet size).
 - Incomplete transfer timeout: 60 seconds, based on monotonic elapsed time.
 - Maximum completed-transfer IDs remembered: 4,096, for 60 seconds, to suppress duplicate fragments after completion.
-- Supports out-of-order delivery.
+- Supports out-of-order delivery and serializes state operations for concurrent BLE callbacks.
 - Identical duplicate fragments are ignored.
 - A duplicate with different bytes, or metadata that conflicts with an active transfer, drops that assembly and frees its reserved memory.
 - Caller can explicitly cancel an active transfer.
@@ -54,6 +54,7 @@ This framing layer is not cryptographic. It does not encrypt, authenticate, sign
 - Metadata mismatch rejection and memory release.
 - Active transfer and byte-budget enforcement.
 - Timeout cleanup.
+- Concurrent callbacks complete a transfer at most once and release reserved memory.
 - Malformed/truncated frame and invalid transfer ID rejection.
 
 ## Not implemented
