@@ -146,9 +146,10 @@ sealed interface BleReassemblyResult {
 }
 
 /**
- * Bounded out-of-order BLE reassembler.
+ * Bounded, out-of-order, thread-safe BLE reassembler.
  * Pass monotonic elapsedRealtime values in milliseconds. Expiration is explicit:
- * call [expire] regularly or before each [accept].
+ * call [expire] regularly or before each [accept]. Public state operations are
+ * synchronized so callers may safely use a shared instance from BLE callbacks.
  */
 class BleReassembler(
     private val maxActiveTransfers: Int = 4,
@@ -177,6 +178,7 @@ class BleReassembler(
         require(maxCompletedTransferIds > 0)
     }
 
+    @Synchronized
     fun accept(fragment: BleFragment, nowElapsedMillis: Long): BleReassemblyResult {
         require(nowElapsedMillis >= 0) { "nowElapsedMillis must not be negative" }
         expire(nowElapsedMillis)
@@ -237,6 +239,7 @@ class BleReassembler(
     }
 
     /** Removes incomplete and completed transfer IDs that have timed out. */
+    @Synchronized
     fun expire(nowElapsedMillis: Long): Int {
         require(nowElapsedMillis >= 0) { "nowElapsedMillis must not be negative" }
         val expiredActive = active.filterValues {
@@ -252,10 +255,13 @@ class BleReassembler(
         return expiredActive.size
     }
 
+    @Synchronized
     fun cancel(transferId: Long): Boolean = removeActive(transferId)
 
+    @Synchronized
     fun activeTransferCount(): Int = active.size
 
+    @Synchronized
     fun bufferedByteCount(): Int = bufferedBytes
 
     private fun removeActive(transferId: Long): Boolean {
