@@ -1,6 +1,6 @@
 # MeshChat Android
 
-Scaffold inicial para una aplicación Android nativa de mensajería privada y comunicación híbrida.
+Proyecto Android nativo para mensajería privada y comunicación híbrida.
 
 ## Decisiones del proyecto
 
@@ -14,24 +14,47 @@ Scaffold inicial para una aplicación Android nativa de mensajería privada y co
 - Selección automática o manual/combinada de conexiones.
 - LoRa queda como ampliación futura mediante hardware externo.
 
-## Estado actual
+## Estado real de la implementación
 
-Este repositorio contiene únicamente una **maqueta de interfaz y estructura Gradle inicial**. No implementa todavía autenticación, almacenamiento de mensajes, cifrado E2EE, intercambio QR, BLE, Wi-Fi Direct, descubrimiento de pares ni retransmisión Mesh. No se debe considerar seguro ni utilizar para comunicaciones reales.
+La aplicación sigue siendo un prototipo. En la rama `feature/opaque-relay-packet-v1` ya existen:
 
-## Arquitectura de seguridad prevista
+- Una pantalla Compose inicial.
+- Codec binario de paquetes RelayPacket v1.
+- Política de admisión y deduplicación de paquetes en repetidores.
+- Almacén SQLite persistente y limitado para hashes y caducidades.
+- Fragmentación/reensamblado BLE independiente de Android, con límites de memoria, número de transferencias y expiración.
+- Pruebas JVM para codec, repetición y fragmentación BLE.
 
-- Las claves privadas deben permanecer en los dispositivos.
-- Los relés y servidores, si se incorporan, solo transportarán paquetes cifrados opacos.
-- Ningún servidor de transporte debe tener acceso a claves privadas ni al texto en claro.
-- La retransmisión será voluntaria y configurable.
-- Los permisos Android y el funcionamiento en segundo plano deberán ajustarse a las restricciones de cada versión y minimizar batería/datos.
+**Todavía no están implementados** el cifrado E2EE, autenticación de identidades, registro, comunidades, QR, scanner/advertiser/GATT BLE, Wi-Fi Direct, descubrimiento, encaminamiento, cola durable de mensajes ni retransmisión por Internet. No utilizar para mensajes privados reales.
 
-## Compilar
+## Arquitectura de seguridad
 
-Abrir el proyecto en Android Studio (JDK 17, Android SDK 35) y ejecutar:
+- Las claves privadas y el estado criptográfico deben permanecer en los dispositivos finales.
+- Los repetidores y servidores solo transportarán paquetes opacos; no tendrán claves privadas, estado MLS ni texto en claro.
+- El almacén de repetición guarda un hash y una caducidad, nunca el contenido del mensaje.
+- El código de fragmentación BLE transporta bytes opacos y no autentica ni cifra.
+- La retransmisión será voluntaria, visible y detenible por el usuario.
+- Los permisos y procesos en segundo plano deben ajustarse a las restricciones de Android.
+
+## Compilar y probar
+
+El repositorio todavía no incluye Gradle Wrapper. Abrir en Android Studio con JDK 17 y Android SDK 35, o instalar Gradle 8.9 y ejecutar:
 
 ```bash
-./gradlew assembleDebug
+gradle testDebugUnitTest assembleDebug
+gradle connectedDebugAndroidTest
 ```
 
-La primera compilación puede requerir descargar dependencias. Aún no se ha verificado una compilación completa ni pruebas en dispositivo.
+La segunda orden necesita un emulador o dispositivo conectado.
+
+## CI conocida
+
+La ejecución 31 de GitHub Actions completó correctamente `testDebugUnitTest assembleDebug`, pero el job de `connectedDebugAndroidTest` falló: el emulador reportó un fallo del proceso de instrumentación y 0 tests ejecutados. Por tanto, los tests instrumentados están escritos, pero **no hay resultado aprobado de Android instrumentado**. No se han realizado pruebas físicas.
+
+## Documentación
+
+- [Formato de paquete y repetición](docs/protocol/relay-packet-v1.md)
+- [Fragmentación BLE v1](docs/protocol/ble-fragmentation-v1.md)
+- [Límite de seguridad E2EE y repetidores](docs/adr/0001-e2ee-boundary-and-relays.md)
+- [Permisos y segundo plano Android](docs/android/permissions-and-background.md)
+- [Evaluación preliminar de MLS](docs/security/mls-implementation-evaluation.md)
